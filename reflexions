@@ -1,0 +1,30 @@
+Pour les pions
+Selection en fonction des formes :
+* formes plus larges que hautes
+* largeur < 2 * hauteur => Faire une exeption pour les figures qui touchent le bas de l'écran ?
+
+type de recherche :
+Comment indiquer le type de recherche
+=> 'P' pour les pions
+=> 'B' pour bleu
+=> 'R' pour rouge
+
+On passe en mode "recherche globale"
+-> Haute résolution
+-> Sur toute l'image
+-> envoi des formes une par une, avec leur numéro (on commence à '0' soit 48, et on continue dans la table ascii) en commençant (par la plus grosse ?) (par la plus près ?)
+Les commandes sont alors les suivantes :
+=> "Espace" (code 32) Passage à la figure suivante
+=> "/" (code 47) nouvelle recherche
+=> "Nombre en acsii" choix de la figure (correspondant à son index)
+=> "~" pour revenir au choix de la couleur
+
+
+Une fois la figure choisie, on passe en mode tracking
+-> résolution en fonction de la taille de la figure (hauteur seuil : 35 px HR => BR, 10px BR => HR)
+-> Envoie la plus grande figure qui contient le centre de la figure précédente
+Commandes
+=> "/" retour à la recherche globale et lancement d'une nouvelle recherche
+=> "~" pour changer la couleur recherchée
+
+
