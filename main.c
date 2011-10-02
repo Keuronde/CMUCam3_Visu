@@ -528,8 +528,8 @@ int main (void)
 			track_x = (figures[index_figure].x0 + figures[index_figure].x1)/2;
 			track_y = (figures[index_figure].y0 + figures[index_figure].y1)/2;
 			figureEnvoi.x0 = figures[index_figure].x0 * 2*pas_x;
-			figureEnvoi.x1 = figures[index_figure].x1 * 2*pas_y;
-			figureEnvoi.y0 = figures[index_figure].y0 * 2*pas_x;
+			figureEnvoi.x1 = figures[index_figure].x1 * 2*pas_x;
+			figureEnvoi.y0 = figures[index_figure].y0 * 2*pas_y;
 			figureEnvoi.y1 = figures[index_figure].y1 * 2*pas_y;
 			// Envoie
 			printf("t %d %d %d %d\n",figureEnvoi.x0,figureEnvoi.y0,figureEnvoi.x1,figureEnvoi.y1);
