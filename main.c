@@ -52,15 +52,17 @@ typedef struct  {
 
 
 // Pour l'optimisation
-  uint8_t pas_x=2;
-  uint8_t pas_y=2;
-
+uint8_t pas_x=2;
+uint8_t pas_y=2;
+uint8_t pas_res=2;
 void reset_resolution(){
   pas_x=2;
   pas_y=2;
+  pas_res=2;
   cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_LOW);
   //cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
   cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+  cc3_pixbuf_frame_reset ();
 }
 
 
@@ -527,36 +529,75 @@ int main (void)
 			// mise à jour de track_x, track_y
 			track_x = (figures[index_figure].x0 + figures[index_figure].x1)/2;
 			track_y = (figures[index_figure].y0 + figures[index_figure].y1)/2;
-			figureEnvoi.x0 = figures[index_figure].x0 * 2*pas_x;
-			figureEnvoi.x1 = figures[index_figure].x1 * 2*pas_x;
-			figureEnvoi.y0 = figures[index_figure].y0 * 2*pas_y;
-			figureEnvoi.y1 = figures[index_figure].y1 * 2*pas_y;
+			figureEnvoi.x0 = figures[index_figure].x0 * pas_res *pas_x;
+			figureEnvoi.x1 = figures[index_figure].x1 * pas_res *pas_x;
+			figureEnvoi.y0 = figures[index_figure].y0 * pas_res *pas_y;
+			figureEnvoi.y1 = figures[index_figure].y1 * pas_res *pas_y;
 			// Envoie
 			printf("t %d %d %d %d\n",figureEnvoi.x0,figureEnvoi.y0,figureEnvoi.x1,figureEnvoi.y1);
             
             // Ajustement de la résolution
             // On vérifie qu'on est en mode tracking
             if(mode == 'T'){
-            	if((figures[index_figure].x1 - figures[index_figure].x0) > SEUIL_HR){
-            		pas_x*=2;
-            		track_x/=2;
-            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
-            		
-            	} 
-	           	if((figures[index_figure].y1 - figures[index_figure].y0) > SEUIL_HR){
-            		pas_y*=2;
-            		track_y/=2;
-            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+              if( ((figures[index_figure].x1 - figures[index_figure].x0)*pas_x > SEUIL_HR ) &&
+                  ((figures[index_figure].y1 - figures[index_figure].y0)*pas_y > SEUIL_HR ) &&
+                  (pas_res<2) ) {
+
+                pas_res*=2;
+                track_x/=2;
+                track_y/=2;
+                cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_LOW);
+                if( ((figures[index_figure].y1 - figures[index_figure].y0)*pas_y/2 < SEUIL_BR) &&
+                    (pas_y>1) ){
+                  pas_y/=2;
+	            		track_y*=2;
+	            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+                }
+                if( ((figures[index_figure].x1 - figures[index_figure].x0)*pas_x/2 < SEUIL_BR) &&
+                    (pas_x>1) ){
+                  pas_x/=2;
+	            		track_x*=2;
+	            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+                }
+                
+              }else{
+              	if((figures[index_figure].x1 - figures[index_figure].x0) > SEUIL_HR){
+              		pas_x*=2;
+              		track_x/=2;
+              		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+              		
+              	} 
+	             	if((figures[index_figure].y1 - figures[index_figure].y0) > SEUIL_HR){
+              		pas_y*=2;
+              		track_y/=2;
+              		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+              	}
             	}
-            	if( (pas_x >2) && ((figures[index_figure].x1 - figures[index_figure].x0) < SEUIL_BR )){
-            		pas_x/=2;
-            		track_x*=2;
-            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            	
+            	
+            	if( ((figures[index_figure].x1 - figures[index_figure].x0) < SEUIL_BR )){
+            	  if(pas_x >1){
+              		pas_x/=2;
+              		track_x*=2;
+              		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            		}else if(pas_res>1){
+            		  pas_res/=2;
+            		  track_x*=2;
+            		  track_y*=2;
+            		  cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
+            		}
             	}
-            	if( (pas_y >2) && ((figures[index_figure].y1 - figures[index_figure].y0) < SEUIL_BR )){
-	        		pas_y/=2;
-	        		track_y*=2;
-	        		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            	if ((figures[index_figure].y1 - figures[index_figure].y0) < SEUIL_BR ){
+            	  if (pas_y >1){
+	            		pas_y/=2;
+	            		track_y*=2;
+	            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+	          		}else if(pas_res>1){
+            		  pas_res/=2;
+            		  track_x*=2;
+            		  track_y*=2;
+            		  cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
+            		}
             	}
             }
           
