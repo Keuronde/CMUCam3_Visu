@@ -51,6 +51,19 @@ typedef struct  {
 
 
 
+// Pour l'optimisation
+  uint8_t pas_x=2;
+  uint8_t pas_y=2;
+
+void reset_resolution(){
+  pas_x=2;
+  pas_y=2;
+  cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_LOW);
+  //cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
+  cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+}
+
+
 int main (void)
 {
 
@@ -78,9 +91,7 @@ int main (void)
   // Reception série
   int recu=-1;
   
-  // Pour l'optimisation
-  uint8_t pas_x=1;
-  uint8_t pas_y=1;
+
 
   // ouvreture de l'UART
   cc3_uart_init (0,
@@ -99,9 +110,7 @@ int main (void)
   //cc3_camera_set_colorspace(CC3_COLORSPACE_YCRCB);
 
   // Résolution de la Caméra
-  cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_LOW);
-  //cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
-  cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, 2, 2);
+  reset_resolution();
 
   // init pixbuf with width and height
   // When using the virtual-cam, note that this will skip the first image
@@ -364,6 +373,8 @@ int main (void)
                 mode = 'G';
                 traitement_image = 1; // On analyse la prochaine image
                 en_attente =0;
+                // On se met en résolution normale
+                reset_resolution();
                 break;
             default :
                 if(recu != '\n' && recu != '\r')
@@ -487,6 +498,7 @@ int main (void)
             case '/':
                 // retour à la recherche globale
                 mode = 'G';
+                reset_resolution();
                 traitement_image = 1; // On analyse la prochaine image
 
                 en_attente = 0; // C'est à la CMUcam de répondre
@@ -510,18 +522,43 @@ int main (void)
           }
         }
         if(index_figure < MAX_FIGURE){
+        	figure_t figureEnvoi;
 
-          // mise à jour de track_x, track_y
-          track_x = (figures[index_figure].x0 + figures[index_figure].x1)/2 * pas_x;
-          track_y = (figures[index_figure].y0 + figures[index_figure].y1)/2 * pas_y;
-		    figures[index_figure].x0 *= 4;
-		    figures[index_figure].x1 *= 4;
-		    figures[index_figure].y0 *= 4;
-		    figures[index_figure].y1 *= 4;
-		    
-          
-          printf("t %d %d %d %d\n",figures[index_figure].x0,figures[index_figure].y0,
-                     figures[index_figure].x1,figures[index_figure].y1);
+			// mise à jour de track_x, track_y
+			track_x = (figures[index_figure].x0 + figures[index_figure].x1)/2;
+			track_y = (figures[index_figure].y0 + figures[index_figure].y1)/2;
+			figureEnvoi.x0 = figures[index_figure].x0 * 2*pas_x;
+			figureEnvoi.x1 = figures[index_figure].x1 * 2*pas_y;
+			figureEnvoi.y0 = figures[index_figure].y0 * 2*pas_x;
+			figureEnvoi.y1 = figures[index_figure].y1 * 2*pas_y;
+			// Envoie
+			printf("t %d %d %d %d\n",figureEnvoi.x0,figureEnvoi.y0,figureEnvoi.x1,figureEnvoi.y1);
+            
+            // Ajustement de la résolution
+            // On vérifie qu'on est en mode tracking
+            if(mode == 'T'){
+            	if((figures[index_figure].x1 - figures[index_figure].x0) > SEUIL_HR){
+            		pas_x*=2;
+            		track_x/=2;
+            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            		
+            	} 
+	           	if((figures[index_figure].y1 - figures[index_figure].y0) > SEUIL_HR){
+            		pas_y*=2;
+            		track_y/=2;
+            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            	}
+            	if( (pas_x >2) && ((figures[index_figure].x1 - figures[index_figure].x0) < SEUIL_BR )){
+            		pas_x/=2;
+            		track_x*=2;
+            		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            	}
+            	if( (pas_y >2) && ((figures[index_figure].y1 - figures[index_figure].y0) < SEUIL_BR )){
+	        		pas_y/=2;
+	        		track_y*=2;
+	        		cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, pas_x, pas_y);
+            	}
+            }
           
         }else{
           printf("t 0 0 0 0\n");
