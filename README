@@ -1,0 +1,6 @@
+Le but est d'avoir un code pour la CMUCam qui fonctionne en 3 étapes :
+1) Donner à la CMUcam la couleur à rechercher.
+2) Obtenir la liste des figures repérées par la CMUcam
+3) En choisir une et la suivre.
+
+Le fichier reflexions dans plus d'information sur le fonctionnement souhaité de la caméra
