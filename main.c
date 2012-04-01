@@ -32,6 +32,7 @@ uint8_t estRouge(cc3_pixel_t pix);
 uint8_t estBleu(cc3_pixel_t pix);
 uint8_t estVert(cc3_pixel_t pix);
 uint8_t estNoir(cc3_pixel_t pix);
+uint8_t estBlanc(cc3_pixel_t pix);
 uint8_t estCouleur(cc3_pixel_t pix,uint8_t couleur);
 
 
@@ -358,6 +359,7 @@ int main (void)
             case 'P' :
             case 'B' :
             case 'R' :
+            case 'W' :
                 // Choix de la couleur
                 couleur = recu;
                 // Passage en mode recherche globale
@@ -547,6 +549,9 @@ uint8_t estCouleur(cc3_pixel_t pix,uint8_t couleur){
         case 'R':
             return estRouge(pix);
             break;
+        case 'W':
+            return estBlanc(pix);
+            break;
         default:
             return 0;
     }
@@ -595,6 +600,16 @@ uint8_t estNoir(cc3_pixel_t pix){
   return 0;
 }
 
+uint8_t estBlanc(cc3_pixel_t pix){
+  // Pour éclairage artificiel
+  //if(pix.channel[CC3_CHANNEL_VAL] > 75){
+  // Pour lumière naturelle
+  if(pix.channel[CC3_CHANNEL_VAL] > 140){
+      return 1;
+  }
+  return 0;
+}
+
 inline void cc3_rgb2tls (cc3_pixel_t * pix)
 {
   uint8_t hue, sat, val;
@@ -615,8 +630,8 @@ inline void cc3_rgb2tls (cc3_pixel_t * pix)
     rgb_min = pix->channel[CC3_CHANNEL_BLUE];
 
 // compute V
-  val = rgb_max;
-  if (val == 0) {
+  val = (rgb_max + rgb_min)/2;
+  if (rgb_max == 0) {
     hue = sat = 0;
     pix->channel[CC3_CHANNEL_HUE] = 0;
     pix->channel[CC3_CHANNEL_SAT] = 0;
@@ -625,7 +640,7 @@ inline void cc3_rgb2tls (cc3_pixel_t * pix)
   }
 
 // compute S
-  sat = 255 * (rgb_max - rgb_min) / val;
+  sat = rgb_max - rgb_min;
   if (sat == 0) {
     pix->channel[CC3_CHANNEL_HUE] = 0;
     pix->channel[CC3_CHANNEL_SAT] = 0;
