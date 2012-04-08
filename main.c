@@ -13,7 +13,7 @@
 #define PAS_Y 15
 #define NB_COL 24
 
-#define TAILLE_MIN 16
+#define TAILLE_MIN 3
 #define MAX_SEGMENT 120
 #define MAX_FIGURE 200
 #define SEUIL_HR 35
@@ -24,7 +24,7 @@
 #define GAUCHE 0
 #define DROIT 1
 
-#define LARGEUR_MIN 5
+#define LARGEUR_MIN 3
 
 inline void cc3_rgb2tls (cc3_pixel_t * pix);
 uint8_t estJaune(cc3_pixel_t pix);
@@ -102,7 +102,7 @@ int main (void)
   // Résolution de la Caméra
   cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_LOW);
   //cc3_camera_set_resolution (CC3_CAMERA_RESOLUTION_HIGH);
-  cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, 2, 2);
+  cc3_pixbuf_frame_set_subsample(CC3_SUBSAMPLE_NEAREST, 4, 4);
 
   // init pixbuf with width and height
   // When using the virtual-cam, note that this will skip the first image
@@ -464,8 +464,8 @@ int main (void)
 				figures[index_figure].x1 *= 4;
 				figures[index_figure].y0 *= 4;
 				figures[index_figure].y1 *= 4;*/
-                printf("g %d %d %d %d %d\n",figures[index_figure].x0*4,figures[index_figure].y0*4,
-                     figures[index_figure].x1*4,figures[index_figure].y1*4,index_figure);
+                printf("g %d %d %d %d %d\n",figures[index_figure].x0*8,figures[index_figure].y0*8,
+                     figures[index_figure].x1*8,figures[index_figure].y1*8,index_figure);
 
               }else{
                 printf("g 0 0 0 0 0\n");
@@ -516,10 +516,10 @@ int main (void)
           // mise à jour de track_x, track_y
           track_x = (figures[index_figure].x0 + figures[index_figure].x1)/2 * pas_x;
           track_y = (figures[index_figure].y0 + figures[index_figure].y1)/2 * pas_y;
-		    figures[index_figure].x0 *= 4;
-		    figures[index_figure].x1 *= 4;
-		    figures[index_figure].y0 *= 4;
-		    figures[index_figure].y1 *= 4;
+		    figures[index_figure].x0 *= 8;
+		    figures[index_figure].x1 *= 8;
+		    figures[index_figure].y0 *= 8;
+		    figures[index_figure].y1 *= 8;
 		    
           
           printf("t %d %d %d %d\n",figures[index_figure].x0,figures[index_figure].y0,
@@ -602,9 +602,9 @@ uint8_t estNoir(cc3_pixel_t pix){
 
 uint8_t estBlanc(cc3_pixel_t pix){
   // Pour éclairage artificiel
-  //if(pix.channel[CC3_CHANNEL_VAL] > 75){
+  if(pix.channel[CC3_CHANNEL_VAL] > 75){
   // Pour lumière naturelle
-  if(pix.channel[CC3_CHANNEL_VAL] > 140){
+  //if(pix.channel[CC3_CHANNEL_VAL] > 140){
       return 1;
   }
   return 0;
@@ -630,7 +630,7 @@ inline void cc3_rgb2tls (cc3_pixel_t * pix)
     rgb_min = pix->channel[CC3_CHANNEL_BLUE];
 
 // compute V
-  val = (rgb_max + rgb_min)/2;
+  val = (rgb_max/2) + (rgb_min/2);
   if (rgb_max == 0) {
     hue = sat = 0;
     pix->channel[CC3_CHANNEL_HUE] = 0;
