@@ -46,7 +46,7 @@ typedef struct  {
 
 typedef struct  {
   uint16_t x0,x1;
-  uint8_t couleurs[2];
+//  uint8_t couleurs[2];
   figure_t *pFigure;
 } segment_t;
 
@@ -191,7 +191,7 @@ int main (void)
         // Pour chaque segment
         j = 0;
         while(j < index_segment_c){
-        
+          /*
           // Il faut obtenir les couleurs encadrante du segment !
           // coté gauche
           segments_courant[j].couleurs[0]=0;
@@ -233,7 +233,7 @@ int main (void)
                   break;
               }
           }
-          
+          */
           
           i = 0;
           while(i < index_segment_a){
@@ -256,6 +256,7 @@ int main (void)
                // couleurs
                // Si les couleurs sont définies
                // Coté gauche
+               /*
                switch(segments_courant[j].couleurs[GAUCHE]){
                   case 0:break;
                   case 1: segments_courant[j].pFigure->nb_rouge[GAUCHE]++;
@@ -272,6 +273,7 @@ int main (void)
                           break;
                   default:break;
                }  
+               */
               
                
                
@@ -300,8 +302,8 @@ int main (void)
             figures[index_figure].x1 = segments_courant[j].x1;
             figures[index_figure].y0 = id_ligne ;
             figures[index_figure].y1 = id_ligne ;
-            figures[index_figure].couleurs[0] = segments_courant[j].couleurs[0];
-            figures[index_figure].couleurs[1] = segments_courant[j].couleurs[1];
+            //figures[index_figure].couleurs[0] = segments_courant[j].couleurs[0];
+            //figures[index_figure].couleurs[1] = segments_courant[j].couleurs[1];
             figures[index_figure].id = 1; // Figure en cours de création
           }
           
