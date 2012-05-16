@@ -191,49 +191,7 @@ int main (void)
         // Pour chaque segment
         j = 0;
         while(j < index_segment_c){
-          /*
-          // Il faut obtenir les couleurs encadrante du segment !
-          // coté gauche
-          segments_courant[j].couleurs[0]=0;
-          segments_courant[j].couleurs[1]=0;
-          for(k=1;k<4;k++){
-              if( segments_courant[j].x0 - k > 0 ){
-                  if( estRouge(ligne[ segments_courant[j].x0 - k ]) ){
-                      segments_courant[j].couleurs[GAUCHE]=1; 
-                      break;
-                  }
-                  if( estBleu( ligne[ segments_courant[j].x0 - k ]) ){
-                      segments_courant[j].couleurs[GAUCHE]=2; 
-                      break;
-                  }
-                  if( estVert( ligne[ segments_courant[j].x0 - k ]) ){
-                      segments_courant[j].couleurs[GAUCHE]=3; 
-                      break;
-                  }
-              }else{
-                  break;
-              }
-          }
-          // coté droit
-          for(k=1;k<4;k++){
-              if( segments_courant[j].x1 + k  < cc3_g_pixbuf_frame.width ){
-                  if( estRouge(ligne[ segments_courant[j].x1 + k ]) ){
-                      segments_courant[j].couleurs[DROIT]=1; 
-                      break;
-                  }
-                  if( estBleu( ligne[ segments_courant[j].x1 + k ]) ){
-                      segments_courant[j].couleurs[DROIT]=2; 
-                      break;
-                  }
-                  if( estVert( ligne[ segments_courant[j].x1 + k ]) ){
-                      segments_courant[j].couleurs[DROIT]=3; 
-                      break;
-                  }
-              }else{
-                  break;
-              }
-          }
-          */
+          
           
           i = 0;
           while(i < index_segment_a){
@@ -253,27 +211,7 @@ int main (void)
                if (segments_courant[j].pFigure->x1 < segments_courant[j].x1){
                  segments_courant[j].pFigure->x1 =segments_courant[j].x1;
                }
-               // couleurs
-               // Si les couleurs sont définies
-               // Coté gauche
-               /*
-               switch(segments_courant[j].couleurs[GAUCHE]){
-                  case 0:break;
-                  case 1: segments_courant[j].pFigure->nb_rouge[GAUCHE]++;
-                          break;
-                  case 2: segments_courant[j].pFigure->nb_bleu[GAUCHE]++;
-                          break;
-                  default:break;
-               }
-               switch(segments_courant[j].couleurs[DROIT]){
-                  case 0:break;
-                  case 1: segments_courant[j].pFigure->nb_rouge[DROIT]++;
-                          break;
-                  case 2: segments_courant[j].pFigure->nb_bleu[DROIT]++;
-                          break;
-                  default:break;
-               }  
-               */
+               
               
                
                
@@ -353,6 +291,9 @@ int main (void)
 
     // I => Init, G => recherche Globale, T => tracking
     switch(mode){
+    case 'J':
+        printf("r\n");
+        mode='I';
     case 'I':
         // Mode Init, on attend une instruction de couleur
         recu = uart0_getc_nb();
@@ -395,7 +336,7 @@ int main (void)
                 en_attente = 0; // C'est à la CMUcam de répondre
                 break;
             case '~':
-                mode = 'I';
+                mode = 'J';
                 traitement_image = 0;
                 break;
             default:
@@ -432,26 +373,6 @@ int main (void)
               for(i=0;i<MAX_FIGURE;i++){
                 
                 if(figures[i].id > 0){
-                  // Adapter en fonction des critères propres à chaque mode ###
-                  // A déplacer un peu plus bas, en fonction du mode.
-                  /*
-                  if(couleur == 'P'){
-                    if(figures[i].x1 - figures[i].x0 > figures[i].y1 - figures[i].y0){ // plus large que haute
-                        if((figures[i].x1 - figures[i].x0)/2 < figures[i].y1 - figures[i].y0){ // Mais pas trop non plus
-                          if(figures[i].x1 - figures[i].x0 > largeur){
-                            index_figure = i;
-                            largeur = figures[i].x1 - figures[i].x0;
-                            figures[i].id = 0; // On ne renverra pas cette figure.
-                          }
-                        }
-                    }
-                  }else{
-                    if(figures[i].x1 - figures[i].x0 > largeur){
-                       index_figure = i;
-                       largeur = figures[i].x1 - figures[i].x0;
-                       figures[i].id = 0; // On ne renverra pas cette figure.
-                    }
-                  }*/
                   if(figures[i].x1 - figures[i].x0 > largeur){
                        index_figure = i;
                        largeur = figures[i].x1 - figures[i].x0;
@@ -462,10 +383,6 @@ int main (void)
               }
               
               if(index_figure < MAX_FIGURE){
-              	/*figures[index_figure].x0 *= 4;
-				figures[index_figure].x1 *= 4;
-				figures[index_figure].y0 *= 4;
-				figures[index_figure].y1 *= 4;*/
                 printf("g %d %d %d %d %d\n",figures[index_figure].x0*8,figures[index_figure].y0*8,
                      figures[index_figure].x1*8,figures[index_figure].y1*8,index_figure);
 
@@ -485,7 +402,7 @@ int main (void)
         if(recu!=-1){
             switch(recu){
             case '~':
-                mode = 'I';
+                mode = 'J';
                 traitement_image = 0;
                 break;
             case '/':
@@ -561,8 +478,10 @@ uint8_t estCouleur(cc3_pixel_t pix,uint8_t couleur){
 
 uint8_t estJaune(cc3_pixel_t pix){
   if(pix.channel[CC3_CHANNEL_SAT] > 45){
-    if(pix.channel[CC3_CHANNEL_HUE] <= 64 && pix.channel[CC3_CHANNEL_HUE] > 7){
-      return 1;
+    if(pix.channel[CC3_CHANNEL_VAL] > 80){
+      if(pix.channel[CC3_CHANNEL_HUE] <= 64 && pix.channel[CC3_CHANNEL_HUE] > 7){
+        return 1;
+      }
     }
   }
   return 0;
